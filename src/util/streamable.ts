@@ -24,6 +24,33 @@ export interface Streamable<O> {
    *   }
    * }
    * ```
+   *
+   * With query cancellation:
+   *
+   * ```ts
+   * const controller = new AbortController()
+   *
+   * const stream = db
+   *   .selectFrom('person')
+   *   .select(['first_name', 'last_name'])
+   *   .stream(100, { signal: controller.signal })
+   *
+   * // Cancel the stream after 5 seconds
+   * setTimeout(() => controller.abort(), 5000)
+   *
+   * try {
+   *   for await (const person of stream) {
+   *     console.log(person.first_name)
+   *   }
+   * } catch (error) {
+   *   if (error.name === 'QueryCancelledError') {
+   *     console.log('Query was cancelled')
+   *   }
+   * }
+   * ```
    */
-  stream(chunkSize?: number): AsyncIterableIterator<O>
+  stream(
+    chunkSize?: number,
+    options?: { signal?: AbortSignal },
+  ): AsyncIterableIterator<O>
 }
